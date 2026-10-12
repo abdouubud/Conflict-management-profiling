@@ -1,0 +1,778 @@
+<title>Conflict Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<style>
+/* Layout: one column, three screens (intro → 30 pairs → result) between a logo header and the WeNego footer.
+   Brand: navy + gold only. Two type sizes: --fs-title (Fraunces) and --fs-text (Inter). */
+:root{
+  --navy:#13213C; --gold:#C9A227;
+  --bg:#F5F4F0; --surface:#FFFFFF; --ink:#13213C; --muted:#4D5872; --line:#DCDDE3;
+  --gold-ink:#7A6110; --gold-soft:#F4EDD3; --navy-soft:#E7E9EF;
+  --m-competing:#13213C; --m-collaborating:#C9A227; --m-compromising:#5E6A86; --m-avoiding:#AEB4C2; --m-accommodating:#E6D08A;
+  --display:"Fraunces", Georgia, "Times New Roman", serif;
+  --body:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fs-title:clamp(1.4rem, 2.4vw, 1.85rem);
+  --dot-bg:#ECEDF1;
+  --fs-text:1rem;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1628; --surface:#16223A; --ink:#EEF0F5; --muted:#AEB6CA; --line:#2A3858;
+  --gold-ink:#D9B748; --gold-soft:#2A2A1E; --navy-soft:#1E2B47;
+  --m-competing:#E8EBF2; --m-collaborating:#D4AE35; --m-compromising:#8E9AB8; --m-avoiding:#4E5C7C; --m-accommodating:#8E7525;
+  --dot-bg:#24314F;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1628; --surface:#16223A; --ink:#EEF0F5; --muted:#AEB6CA; --line:#2A3858;
+  --gold-ink:#D9B748; --gold-soft:#2A2A1E; --navy-soft:#1E2B47;
+  --m-competing:#E8EBF2; --m-collaborating:#D4AE35; --m-compromising:#8E9AB8; --m-avoiding:#4E5C7C; --m-accommodating:#8E7525;
+  --dot-bg:#24314F;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--fs-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1200px;margin:0 auto;padding-inline:20px;padding-block:16px 48px}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.15;text-wrap:balance;margin:0;letter-spacing:-.01em;font-size:var(--fs-title)}
+/* everything that isn't a title uses the text size */
+p,li,button,small,b,span,summary,q,.eyebrow,.lead{font-size:var(--fs-text)}
+h3.t-text,h4.t-text,.t-text{font-family:var(--body);font-size:var(--fs-text);font-weight:600;line-height:1.4;letter-spacing:0}
+p{margin:0}
+.eyebrow{font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-ink)}
+.lead{color:var(--muted);max-width:62ch}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+
+/* header */
+.bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding-block:8px 18px;margin-bottom:28px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{display:flex;flex-direction:column;align-items:flex-start;gap:0;text-decoration:none;color:var(--muted)}
+.logo img{height:22px;margin-bottom:3px;width:auto;max-width:none;object-fit:contain;display:block}
+.logo span{font-weight:600;font-size:.78rem}
+.bar-title{font-family:var(--display);font-weight:600;font-size:1.15rem;text-align:center;margin:0;line-height:1.2}
+.bar .lang{justify-self:end}
+.lang{display:flex;gap:2px;padding:4px;background:var(--navy-soft);border-radius:999px}
+.lang button{background:transparent;border:0;color:var(--muted);padding:6px 18px;border-radius:999px;font-weight:700}
+.lang button[aria-pressed="true"]{background:var(--navy);color:#fff}
+
+.btn{text-decoration:none;display:inline-flex;align-items:center;gap:10px;border:0;border-radius:999px;padding:14px 28px;font-weight:600;background:var(--ink);color:var(--bg);transition:transform .15s,filter .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.gold{background:var(--gold);color:var(--navy)}
+.btn.gold:hover{filter:brightness(1.06)}
+
+/* ---------- INTRO ---------- */
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center}
+.hero > *{min-width:0}
+.hero .copy{display:flex;flex-direction:column;gap:16px}
+.apple{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:14px}
+.apple-q{font-weight:600}
+.reply{display:grid;grid-template-columns:38px 1fr;gap:12px;align-items:center}
+.reply .ani{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--c);background:var(--surface)}
+.reply q{quotes:"« " " »";font-style:italic;display:block}
+.reply small{display:block;color:var(--muted)}
+
+.section{margin-top:44px;display:flex;flex-direction:column;gap:18px}
+.axes{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.axes > div{border-top:2px solid var(--gold);padding-top:14px;display:flex;flex-direction:column;gap:4px}
+.axes b{font-weight:600}
+.axes p{color:var(--muted)}
+
+.modes{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.mode-card{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.mode-card .ani{line-height:1}
+.mode-card .tag{color:var(--muted)}
+.mode-card p{color:var(--muted);line-height:1.5}
+
+.wide{width:auto}
+.howto{font-size:.92rem;background:var(--navy);color:#fff;border-radius:22px;padding:32px 44px;display:grid;grid-template-columns:1.4fr 1fr;gap:28px;align-items:center}
+.howto > *{min-width:0}
+.howto h2{color:#fff;font-size:1.6rem}
+.howto p,.howto span,.howto button,.about p,.about b,.about span,.about a{font-size:.92rem}
+.howto p{color:#D3D8E4}
+.howto .meta{display:flex;gap:24px;flex-wrap:wrap;margin-top:16px;color:var(--gold);font-weight:600}
+.howto .cta{display:flex;justify-content:flex-end}
+
+/* ---------- QUIZ ---------- */
+.quiz{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.progress{display:flex;flex-direction:column;gap:10px}
+.progress .row{display:flex;justify-content:space-between;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600}
+.track{height:6px;background:var(--line);border-radius:999px;overflow:hidden}
+.track i{display:block;height:100%;background:var(--gold);width:0;transition:width .3s}
+.prompt{font-family:var(--display);font-size:1.25rem;font-weight:600;line-height:1.35}
+.choices{display:grid;gap:14px}
+.choice{display:grid;grid-template-columns:48px 1fr;gap:18px;align-items:center;text-align:left;width:100%;background:var(--surface);color:var(--ink);border:1.5px solid var(--line);border-radius:16px;padding:18px 22px;line-height:1.5;transition:border-color .15s,background .15s,transform .15s}
+.choice:hover{border-color:var(--gold);transform:translateY(-1px)}
+.choice .key{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-weight:600;background:var(--navy-soft);color:var(--ink)}
+.choice[aria-pressed="true"]{border-color:var(--gold);background:var(--gold-soft)}
+.choice[aria-pressed="true"] .key{background:var(--gold);color:var(--navy)}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.hint{color:var(--muted)}
+.linkbtn{background:none;border:0;color:var(--ink);font-weight:600;padding:8px 0}
+.linkbtn:disabled{opacity:.35;cursor:default}
+
+/* ---------- RESULT ---------- */
+.res-head{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+#res-lead{max-width:none}
+@media (min-width:900px){#res-lead{white-space:nowrap}}
+.res-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:stretch}
+.res-grid > *{min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:24px}
+
+.matrix-wrap{display:grid;grid-template-columns:28px 1fr;grid-template-rows:1fr 28px;gap:6px}
+.y-label{position:relative;color:var(--muted);font-weight:600}
+.y-label .yl{position:absolute;left:50%;top:50%;width:300px;transform:translate(-50%,-50%) rotate(-90deg);display:flex;justify-content:space-between;align-items:center;white-space:nowrap}
+.res-grid > .panel{display:flex;flex-direction:column}
+.defs{flex:1;justify-content:space-around}
+.x-label{grid-column:2;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.y-label small,.x-label small{font-weight:400}
+.matrix{position:relative;aspect-ratio:1/1;max-width:100%;border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);background:
+  linear-gradient(var(--line),var(--line)) 50% 0/1px 100% no-repeat,
+  linear-gradient(var(--line),var(--line)) 0 50%/100% 1px no-repeat}
+.matrix .lo,.matrix .hi{position:absolute;color:var(--muted)}
+.node{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;width:34%}
+.node .dot{border-radius:50%;display:grid;place-items:center;line-height:1;background:var(--dot-bg);border:1.5px solid var(--line);transition:width .5s,height .5s;box-shadow:0 0 0 4px var(--surface)}
+.node b{line-height:1.25}
+.node .pct{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600}
+
+.bars{display:flex;flex-direction:column;gap:16px}
+.barrow{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center}
+.barrow .name{display:flex;justify-content:space-between;gap:8px;font-weight:600;margin-bottom:5px}
+.barrow .band{padding:0 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-weight:600;white-space:nowrap}
+.barrow .band.high{border-color:transparent;background:var(--gold);color:var(--navy)}
+.btrack{height:10px;background:var(--navy-soft);border-radius:999px;overflow:hidden;position:relative}
+.btrack i{display:block;height:100%;border-radius:999px;width:0;transition:width .6s}
+.btrack::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--muted);opacity:.5}
+.barrow .score{font-variant-numeric:tabular-nums;font-weight:600;text-align:right;min-width:52px}
+.scale-note{color:var(--muted);margin-top:16px;display:flex;gap:8px 20px;flex-wrap:wrap}
+.scale-note b{color:var(--ink)}
+.scores-panel{margin-top:24px}
+.bars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 40px}
+.defs{display:flex;flex-direction:column;gap:14px}
+.def{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start}
+.def .ico{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--dot-bg);border:1.5px solid var(--line)}
+.def b{display:block}
+.def p{color:var(--muted);line-height:1.45}
+.cta-box{margin-top:28px;border:1.5px solid var(--gold);border-radius:16px;padding:18px 22px;display:flex;gap:16px;align-items:center;background:var(--surface)}
+.cta-box .ico{width:46px;height:46px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--dot-bg);color:var(--ink)}
+.cta-box a{color:var(--ink);font-weight:700;text-decoration:none;border-bottom:2px solid var(--gold)}
+body.pdf-mode .actions,body.pdf-mode .lang{visibility:hidden}
+
+.focus{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.focus > *{min-width:0}
+.focus .panel{display:flex;flex-direction:column;gap:14px;border-top:5px solid var(--c)}
+.focus .kicker{font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink)}
+.focus h3{display:flex;gap:10px;align-items:center;font-size:1.3rem}
+.focus p{color:var(--muted)}
+ul.clean{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;color:var(--muted)}
+
+.all{margin-top:36px;display:flex;flex-direction:column;gap:12px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:0 22px}
+summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:14px;padding:18px 0;font-weight:600;flex-wrap:wrap}
+summary::-webkit-details-marker{display:none}
+summary .sc{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+summary::after{content:"+";color:var(--gold-ink);width:16px;text-align:center}
+details[open] summary::after{content:"–"}
+.det{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding-bottom:22px}
+.det > *{min-width:0;display:flex;flex-direction:column;gap:8px}
+.det .full{grid-column:1/-1}
+.det p{color:var(--muted)}
+
+.quote{margin-top:28px;padding:28px;border-radius:20px;background:var(--gold-soft);border-left:0;display:flex;flex-direction:column;gap:10px}
+.quote p{max-width:none}
+.actions{margin-top:24px;display:flex;gap:12px;flex-wrap:wrap}
+.toast{color:var(--muted);align-self:center}
+
+/* contact step */
+.form-card{max-width:820px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:18px}
+.form-card .lead{max-width:none}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-weight:600}
+.field input{font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;width:100%}
+.field input:focus{outline:none;border-color:var(--gold)}
+.field input[aria-invalid="true"]{border-color:#C0392B}
+.form-err{color:#C0392B;font-weight:600;min-height:1.6em}
+.form-note{color:var(--muted)}
+@media (max-width:640px){.fgrid{grid-template-columns:1fr}.form-card{padding:22px}}
+
+/* footer: WeNego about card */
+.site-footer{max-width:1200px;margin:0 auto;padding-inline:20px;padding-block:0 48px}
+.about{background:var(--navy);color:#fff;border-radius:22px;padding:32px 44px;display:grid;grid-template-columns:minmax(0,1.6fr) auto auto;gap:40px;align-items:center}
+.about > *{min-width:0}
+.about p{color:#fff;line-height:1.7;max-width:60ch}
+.stats{border-left:1px solid rgba(255,255,255,.18);padding-left:40px;display:grid;grid-template-columns:auto auto;column-gap:56px;row-gap:12px}
+.stats b{color:var(--gold);font-weight:600;font-variant-numeric:tabular-nums}
+.stats span{color:#B9C3DE}
+.about .btn{white-space:nowrap}
+
+@media (max-width:880px){
+  .modes{grid-template-columns:repeat(2,1fr)}
+  .modes .mode-card:last-child{grid-column:1/-1}
+}
+@media (max-width:860px){
+  .about{grid-template-columns:1fr;gap:24px;padding:28px}
+  .stats{border-left:0;padding-left:0;border-top:1px solid rgba(255,255,255,.18);padding-top:20px}
+}
+@media (max-width:760px){
+  .bar{grid-template-columns:1fr auto}
+  .bar-title{grid-column:1/-1;grid-row:2;text-align:left}
+  .hero,.res-grid,.focus,.howto,.det,.axes,.bars{grid-template-columns:1fr}
+  .howto .cta{justify-content:flex-start}
+  .howto{padding:24px}
+  .choice{grid-template-columns:40px 1fr;padding:18px;gap:14px}
+  .choice .key{width:40px;height:40px}
+  .node b{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <a class="logo" href="https://wenego.fr" target="_blank" rel="noopener"><img src="data:image/png;base64,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" alt="WeNego"><span>Empowering people &amp; organisations</span></a>
+    <p class="bar-title" data-i18n="barTitle"></p>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" id="lang-en" data-lang="en" aria-pressed="false">EN</button>
+      <button type="button" id="lang-fr" data-lang="fr" aria-pressed="true">FR</button>
+    </div>
+  </header>
+
+  <!-- INTRO -->
+  <main id="screen-intro">
+    <section class="hero">
+      <div class="copy">
+        <span class="eyebrow" data-i18n="eyebrow"></span>
+        <h1 data-i18n="h1"></h1>
+        <p class="lead" data-i18n="lead"></p>
+        <div><button class="btn gold" type="button" id="start-top" data-i18n="start"></button></div>
+      </div>
+      <div class="apple" id="apple"></div>
+    </section>
+
+    <section class="section">
+      <span class="eyebrow" data-i18n="axesEyebrow"></span>
+      <h2 data-i18n="axesTitle"></h2>
+      <div class="axes">
+        <div><b data-i18n="assert"></b><p data-i18n="assertDef"></p></div>
+        <div><b data-i18n="coop"></b><p data-i18n="coopDef"></p></div>
+      </div>
+      <div class="modes" id="mode-cards"></div>
+    </section>
+
+    <section class="section">
+      <div class="howto wide">
+        <div>
+          <h2 data-i18n="howTitle" style="margin-bottom:12px"></h2>
+          <p data-i18n="howText"></p>
+          <div class="meta"><span data-i18n="meta1"></span><span data-i18n="meta2"></span><span data-i18n="meta3"></span></div>
+        </div>
+        <div class="cta"><button class="btn gold" type="button" id="start-bottom" data-i18n="start"></button></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- QUIZ -->
+  <main id="screen-quiz" hidden>
+    <div class="quiz">
+      <div class="progress">
+        <div class="row"><span id="q-count"></span><span id="q-pct"></span></div>
+        <div class="track"><i id="q-bar"></i></div>
+      </div>
+      <p class="prompt" data-i18n="prompt"></p>
+      <div class="choices">
+        <button class="choice" type="button" id="choice-a" data-opt="A"><span class="key">A</span><span id="txt-a"></span></button>
+        <button class="choice" type="button" id="choice-b" data-opt="B"><span class="key">B</span><span id="txt-b"></span></button>
+      </div>
+      <div class="quiz-nav">
+        <button class="linkbtn" type="button" id="back" data-i18n="back"></button>
+        <span class="hint" data-i18n="hint"></span>
+      </div>
+    </div>
+  </main>
+
+  <!-- CONTACT STEP -->
+  <main id="screen-form" hidden>
+    <form class="form-card" id="lead-form" novalidate>
+      <span class="eyebrow" data-i18n="formEyebrow"></span>
+      <h2 data-i18n="formTitle"></h2>
+      <p class="lead" data-i18n="formLead"></p>
+      <div class="fgrid">
+        <div class="field"><label for="f-first" data-i18n="fFirst"></label><input id="f-first" name="firstName" autocomplete="given-name" required></div>
+        <div class="field"><label for="f-last" data-i18n="fLast"></label><input id="f-last" name="lastName" autocomplete="family-name" required></div>
+        <div class="field"><label for="f-email" data-i18n="fEmail"></label><input id="f-email" name="email" type="email" autocomplete="email" required></div>
+        <div class="field"><label for="f-company" data-i18n="fCompany"></label><input id="f-company" name="company" autocomplete="organization" required></div>
+      </div>
+      <p class="form-err" id="form-err" aria-live="polite"></p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <button class="btn gold" type="submit" id="f-submit" data-i18n="fSubmit"></button>
+        <button class="linkbtn" type="button" id="f-back" data-i18n="back"></button>
+      </div>
+      <p class="form-note" data-i18n="formNote"></p>
+    </form>
+  </main>
+
+  <!-- RESULT -->
+  <main id="screen-result" hidden>
+    <div class="res-head">
+      <span class="eyebrow" data-i18n="resEyebrow"></span>
+      <h1 id="res-title"></h1>
+      <p class="lead" id="res-lead"></p>
+    </div>
+    <div class="res-grid">
+      <div class="panel">
+        <div class="matrix-wrap">
+          <div class="y-label"><div class="yl" id="yl"><small data-i18n="lowL"></small><span><span data-i18n="assert"></span> →</span><small data-i18n="highL"></small></div></div>
+          <div class="matrix" id="matrix"></div>
+          <div class="x-label"><small data-i18n="lowL"></small><span><span data-i18n="coop"></span> →</span><small data-i18n="highL"></small></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3 data-i18n="defsTitle" class="t-text" style="margin-bottom:16px"></h3>
+        <div class="defs" id="defs"></div>
+      </div>
+    </div>
+    <div class="panel scores-panel">
+      <h3 data-i18n="scoresTitle" class="t-text" style="margin-bottom:18px"></h3>
+      <div class="bars" id="bars"></div>
+      <p class="scale-note"><span data-i18n="scale0"></span><span><b data-i18n="high"></b><span data-i18n="scaleH"></span></span><span><b data-i18n="mid"></b><span data-i18n="scaleM"></span></span><span><b data-i18n="low"></b><span data-i18n="scaleL"></span></span></p>
+    </div>
+
+    <div class="focus" id="focus"></div>
+
+    <div class="all">
+      <h2 data-i18n="allTitle" style="margin-bottom:8px"></h2>
+      <div id="all-modes" style="display:flex;flex-direction:column;gap:12px"></div>
+    </div>
+
+    <div class="quote">
+      <span class="eyebrow" data-i18n="noRight"></span>
+      <p data-i18n="noRightText"></p>
+    </div>
+
+    <div class="cta-box">
+      <span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg></span>
+      <p><span data-i18n="ctaText"></span><br><span data-i18n="ctaContact"></span> <a href="mailto:contact@wenego.fr">contact@wenego.fr</a></p>
+    </div>
+
+    <div class="actions">
+      <button class="btn gold" type="button" id="pdf" data-i18n="pdf"></button>
+      <button class="btn ghost" type="button" id="restart" data-i18n="restart"></button>
+      <span class="toast" id="toast" aria-live="polite"></span>
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer" id="about-footer">
+  <div class="about">
+    <p data-i18n="fAbout"></p>
+    <div class="stats">
+      <b data-i18n="s1n"></b><span data-i18n="s1"></span>
+      <b>1500+</b><span data-i18n="s2"></span>
+      <b>150+</b><span data-i18n="s3"></span>
+    </div>
+    <a class="btn gold" href="https://wenego.fr" target="_blank" rel="noopener" data-i18n="fVisit"></a>
+  </div>
+</footer>
+
+<script>
+/* ---------- content ---------- */
+const MODES = ["competing","collaborating","compromising","avoiding","accommodating"];
+const POS = {competing:[18,18],collaborating:[82,18],compromising:[50,50],avoiding:[18,82],accommodating:[82,82]};
+const ANI = {competing:"🦈",collaborating:"🐬",compromising:"🦊",avoiding:"🐢",accommodating:"🐔"};
+
+const M = {
+ competing:{
+  fr:{name:"Compétition",animal:"Le requin",tag:"Affirmé · peu coopératif",
+   say:"C’est à moi ! — Non, c’est à moi !",
+   short:"Je défends ma position et je cherche à gagner.",
+   desc:"Affirmé et peu coopératif, c’est un mode orienté vers le pouvoir. Vous poursuivez vos propres objectifs aux dépens de l’autre, en utilisant le pouvoir qui vous semble approprié pour faire triompher votre position : défendre vos droits, soutenir une position que vous jugez juste, ou simplement chercher à gagner.",
+   useful:["En cas d’urgence, quand une décision rapide et ferme est vitale","Quand il faut mettre en œuvre des mesures impopulaires (coupes budgétaires, sanctions, règles à faire respecter)","Sur des questions vitales pour l’organisation, quand vous savez que vous avez raison","Pour vous protéger de ceux qui profitent d’un comportement conciliant"],
+   high:["Êtes-vous entouré de personnes qui vous donnent toujours raison ? Votre entourage a peut-être appris qu’il était risqué de vous contredire, ce qui vous coupe de vos sources d’information.","Vos collaborateurs ont-ils peur d’admettre leurs doutes ou leur ignorance devant vous ? Dans un climat de compétition, chacun se montre plus sûr de lui qu’il ne l’est, et apprend moins."],
+   low:["Vous sentez-vous parfois impuissant ? Vous n’avez peut-être pas conscience du pouvoir dont vous disposez, ou vous êtes mal à l’aise à l’idée de l’utiliser.","Avez-vous du mal à prendre position, même quand c’est nécessaire ? L’hésitation peut retarder la décision et nourrir frustration et ressentiment."]},
+  en:{name:"Competing",animal:"The shark",tag:"Assertive · uncooperative",
+   say:"It’s mine! — No, it’s mine!",
+   short:"I defend my position and aim to win.",
+   desc:"Assertive and uncooperative, a power-oriented mode. You pursue your own concerns at the other person’s expense, using whatever power seems appropriate to win your position: standing up for your rights, defending a position you believe is correct, or simply trying to win.",
+   useful:["When quick, decisive action is vital (e.g. emergencies)","When unpopular decisions need to be implemented (budget cuts, enforcement, discipline)","On issues vital to the organisation, when you know you are right","To protect yourself against people who take advantage of non-competitive behaviour"],
+   high:["Are you surrounded by people who always agree with you? Those around you may have learned that disagreeing is risky, which cuts you off from information.","Are your colleagues afraid to admit ignorance or uncertainty to you? In a competitive climate people appear more confident than they are, and learn less."],
+   low:["Do you often feel powerless? You may be unaware of the power you have, or uncomfortable using it, which limits your influence.","Do you have trouble taking a firm stand, even when you see the need? Hesitation can delay decisions and add to resentment."]}
+ },
+ collaborating:{
+  fr:{name:"Collaboration",animal:"Le dauphin",tag:"Affirmé · coopératif",
+   say:"Et si on allait voir s’il reste des pêches ?",
+   short:"Je cherche une solution qui satisfait pleinement les deux.",
+   desc:"Affirmé et coopératif. Vous travaillez avec l’autre pour trouver une solution qui réponde pleinement aux préoccupations de chacun. Cela demande de creuser la question pour identifier les besoins sous-jacents des deux parties et trouver une alternative qui les satisfait tous les deux.",
+   useful:["Pour trouver une solution intégrative quand les enjeux des deux parties sont trop importants pour un compromis","Pour apprendre, tester vos hypothèses ou comprendre le point de vue de l’autre","Pour faire la synthèse de positions différentes","Pour obtenir l’engagement des autres en intégrant leurs aspirations","Pour lever une hostilité qui a pesé sur une relation"],
+   high:["Passez-vous du temps à discuter en profondeur de sujets qui ne le méritent pas ? La collaboration demande du temps et de l’énergie ; les problèmes mineurs n’exigent pas de solution optimale.","Votre attitude collaborative suscite-t-elle des réponses collaboratives ? Votre ouverture peut être exploitée, et vous risquez de manquer des signaux de méfiance, d’impatience ou d’intérêts divergents."],
+   low:["Avez-vous du mal à voir dans les désaccords des occasions d’apprendre ou de résoudre des problèmes ensemble ? Un pessimisme systématique peut vous priver des bénéfices de la coopération.","Vos collaborateurs se sentent-ils peu engagés dans vos décisions ? Leurs aspirations n’y sont peut-être pas assez intégrées."]},
+  en:{name:"Collaborating",animal:"The dolphin",tag:"Assertive · cooperative",
+   say:"What if we went to see if there are any peaches left?",
+   short:"I look for a solution that fully satisfies both of us.",
+   desc:"Both assertive and cooperative. You work with the other person to find a solution that fully satisfies the concerns of both. It means digging into an issue to identify the underlying concerns of both people and finding an alternative that meets both sets of concerns.",
+   useful:["To find an integrative solution when both sets of concerns are too important to be compromised","When your objective is to learn: to test your assumptions or understand others’ views","To merge insights from people with different perspectives","To gain commitment by incorporating others’ concerns into a shared decision","To work through hostility that has interfered with a relationship"],
+   high:["Do you spend time discussing issues in depth that don’t seem to deserve it? Collaboration takes time and energy; trivial problems don’t require optimal solutions.","Does your collaborative behaviour fail to elicit collaborative responses? Your openness can be exploited, and you may miss cues of defensiveness, impatience or conflicting interests."],
+   low:["Is it hard for you to see differences as opportunities for joint gain, learning or problem solving? Pessimism can keep you from the benefits of successful collaboration.","Are your colleagues uncommitted to your decisions? Their concerns may not be incorporated into them."]}
+ },
+ compromising:{
+  fr:{name:"Compromis",animal:"Le renard",tag:"Intermédiaire",
+   say:"On partage ?",
+   short:"Je cherche un terrain d’entente rapide et acceptable pour tous.",
+   desc:"Intermédiaire en affirmation de soi comme en coopération. L’objectif est de trouver rapidement une solution mutuellement acceptable qui satisfait partiellement les deux parties : couper la poire en deux, échanger des concessions ou chercher rapidement un juste milieu.",
+   useful:["Quand les objectifs sont importants mais ne valent pas le risque d’une rupture","Quand des parties de force égale visent des objectifs opposés","Pour résoudre temporairement des questions complexes","Pour trouver une issue rapide, faute de temps","En dernier recours, quand la collaboration ou la compétition ont échoué"],
+   high:["Vous concentrez-vous tant sur la tactique et la négociation que vous perdez de vue l’essentiel : principes, valeurs, objectifs à long terme ?","L’accent mis sur le marchandage crée-t-il un climat de cynisme qui mine la confiance et détourne des vrais enjeux ?"],
+   low:["Êtes-vous trop sensible ou trop gêné pour être efficace en négociation ?","Avez-vous du mal à faire des concessions ? Sans cette soupape, il est difficile de sortir dignement d’un rapport de force destructeur."]},
+  en:{name:"Compromising",animal:"The fox",tag:"Intermediate",
+   say:"Shall we share it?",
+   short:"I look for a quick middle ground both sides can accept.",
+   desc:"Intermediate in both assertiveness and cooperativeness. The objective is to find an expedient, mutually acceptable solution that partially satisfies both parties: splitting the difference, exchanging concessions, or seeking a quick middle-ground position.",
+   useful:["When goals are important but not worth the effort or risk of more assertive modes","When equally powerful opponents are committed to mutually exclusive goals","To reach temporary settlements of complex issues","To arrive at expedient solutions under time pressure","As a backup when collaboration or competition fails"],
+   high:["Do you concentrate so heavily on the tactics of compromise that you lose sight of larger issues: principles, values, long-term objectives?","Does the emphasis on bargaining create a cynical climate that undermines trust and distracts from the merits of the issues?"],
+   low:["Do you find yourself too sensitive or embarrassed to be effective in bargaining situations?","Do you find it hard to make concessions? Without this safety valve, it is hard to get out of destructive power struggles gracefully."]}
+ },
+ avoiding:{
+  fr:{name:"Évitement",animal:"La tortue",tag:"Peu affirmé · peu coopératif",
+   say:"Et si on allait jouer dans le jardin ?",
+   short:"Je contourne le conflit ou je le reporte.",
+   desc:"Peu affirmé et peu coopératif. Vous ne poursuivez ni vos propres objectifs ni ceux de l’autre : vous n’abordez pas le conflit. Cela peut prendre la forme d’un contournement diplomatique, d’un report à un moment plus opportun, ou d’un simple retrait face à une situation menaçante.",
+   useful:["Quand la question est mineure ou que d’autres sujets sont plus urgents","Quand vous ne voyez aucune chance de satisfaire vos aspirations","Quand la confrontation coûterait plus qu’elle ne rapporterait","Pour laisser retomber les émotions et retrouver du recul","Quand il est plus important de recueillir de l’information que de décider tout de suite","Quand d’autres peuvent résoudre le conflit plus efficacement","Quand le problème est le symptôme d’un problème plus profond"],
+   high:["Votre coordination souffre-t-elle parce que vos collègues ont du mal à obtenir votre avis ?","Vos collègues semblent-ils souvent « marcher sur des œufs » ? Beaucoup d’énergie est dépensée à éviter des sujets qu’il faudrait traiter.","Des décisions importantes sont-elles parfois prises par défaut ?"],
+   low:["Vous arrive-t-il de blesser les autres ou de susciter de l’hostilité ? Plus de tact pourrait être utile, c’est en partie l’art d’éviter les aspects inutilement conflictuels d’une question.","Vous sentez-vous souvent débordé par le nombre de sujets à traiter ? Il faudrait peut-être prioriser, et déléguer les moins importants."]},
+  en:{name:"Avoiding",animal:"The turtle",tag:"Unassertive · uncooperative",
+   say:"What if we went to play in the garden?",
+   short:"I sidestep the conflict or postpone it.",
+   desc:"Unassertive and uncooperative. You do not immediately pursue your own concerns or those of the other person; you do not address the conflict. It might take the form of diplomatically sidestepping an issue, postponing it until a better time, or simply withdrawing from a threatening situation.",
+   useful:["When an issue is trivial, or more important issues are pressing","When you see no chance of satisfying your concerns","When the potential damage of confronting outweighs the benefits","To let people cool down and regain perspective","When gathering information outweighs the advantages of an immediate decision","When others can resolve the conflict more effectively","When the issue is a symptom of another, more basic issue"],
+   high:["Does your coordination suffer because people have trouble getting your input on issues?","Does it often appear that people are “walking on eggshells”? Energy is spent avoiding issues that need to be faced and resolved.","Are decisions on important issues sometimes made by default?"],
+   low:["Do you find yourself hurting people’s feelings or stirring up hostility? More tact may be needed: tact is partly the art of avoiding needlessly disruptive aspects of an issue.","Do you often feel harried or overwhelmed by a large number of issues? You may need to set priorities and delegate."]}
+ },
+ accommodating:{
+  fr:{name:"Accommodement",animal:"La poule",tag:"Peu affirmé · coopératif",
+   say:"Prends-la, toi. — Non, prends-la plutôt, toi.",
+   short:"Je fais passer les attentes de l’autre avant les miennes.",
+   desc:"Peu affirmé et coopératif, l’inverse de la compétition. Vous négligez vos propres préoccupations pour satisfaire celles de l’autre ; ce mode comporte une part de sacrifice. Il peut prendre la forme d’une générosité désintéressée, de l’obéissance à un ordre que vous préféreriez ne pas suivre, ou du ralliement au point de vue de l’autre.",
+   useful:["Quand vous constatez que vous avez tort, pour laisser s’exprimer une meilleure idée et montrer que vous êtes raisonnable","Quand la question compte beaucoup plus pour l’autre que pour vous","Pour gagner du crédit en prévision de sujets plus importants","Pour limiter les pertes quand vous êtes en position de faiblesse","Quand l’harmonie et la stabilité sont essentielles","Pour permettre aux autres d’apprendre de leurs erreurs"],
+   high:["Avez-vous le sentiment que vos idées et préoccupations ne reçoivent pas l’attention qu’elles méritent ? Trop céder peut réduire votre influence et priver l’organisation de votre contribution.","La discipline est-elle relâchée ? Certaines règles essentielles doivent être tenues ; céder sur ces points peut nuire à vous, aux autres et à l’entreprise."],
+   low:["Avez-vous du mal à créer de la bonne volonté ? Céder sur les points mineurs qui comptent pour les autres en est un signe.","Les autres vous trouvent-ils parfois déraisonnable ?","Avez-vous du mal à reconnaître que vous avez tort ?","Savez-vous faire des exceptions légitimes aux règles, et sentir quand il est temps de céder ?"]},
+  en:{name:"Accommodating",animal:"The hen",tag:"Unassertive · cooperative",
+   say:"You take it. — No, you take it.",
+   short:"I put the other person’s concerns ahead of my own.",
+   desc:"Unassertive and cooperative, the opposite of competing. You neglect your own concerns to satisfy the concerns of the other person; there is an element of self-sacrifice in this mode. It might take the form of selfless generosity, obeying an order you would prefer not to follow, or yielding to another’s point of view.",
+   useful:["When you realise you are wrong: to let a better position be heard, to learn, and to show you are reasonable","When the issue matters much more to the other person than to you","To build credit for later, more important issues","To minimise loss when you are outmatched","When harmony and stability are especially important","To let others develop by learning from their mistakes"],
+   high:["Do you feel your own ideas and concerns don’t get the attention they deserve? Deferring too much can reduce your influence and deprive the organisation of your contributions.","Is discipline lax? Some rules and procedures are crucial; giving in on them can harm you, others and the organisation."],
+   low:["Do you have trouble building goodwill? Accommodating on minor issues that matter to others is a gesture of goodwill.","Do others often regard you as unreasonable?","Do you have trouble admitting when you are wrong?","Do you recognise legitimate exceptions to rules, and know when to give up?"]}
+ }
+};
+
+/* 40 unique statements, [fr, en] */
+const S = {
+ s1:["Il m’arrive de laisser aux autres la responsabilité de résoudre le problème.","There are times when I let others take responsibility for solving the problem."],
+ s2:["Plutôt que de négocier sur nos désaccords, j’essaie de mettre en avant les points sur lesquels nous sommes d’accord.","Rather than negotiate the things on which we disagree, I try to stress those things on which we both agree."],
+ s3:["J’essaie de trouver une solution de compromis.","I try to find a compromise solution."],
+ s4:["J’essaie de prendre en compte toutes ses préoccupations et toutes les miennes.","I attempt to deal with all of his/her and my concerns."],
+ s5:["Je suis généralement ferme dans la poursuite de mes objectifs.","I am usually firm in pursuing my goals."],
+ s6:["J’essaie d’apaiser les sentiments de l’autre et de préserver notre relation.","I might try to soothe the other’s feelings and preserve our relationship."],
+ s7:["Je sacrifie parfois mes propres souhaits à ceux de l’autre.","I sometimes sacrifice my own wishes for the wishes of the other person."],
+ s8:["Je sollicite systématiquement l’aide de l’autre pour élaborer une solution.","I consistently seek the other’s help in working out a solution."],
+ s9:["Je fais le nécessaire pour éviter les tensions inutiles.","I try to do what is necessary to avoid useless tensions."],
+ s10:["J’essaie d’éviter de me mettre dans une situation désagréable.","I try to avoid creating unpleasantness for myself."],
+ s11:["J’essaie de faire triompher ma position.","I try to win my position."],
+ s12:["J’essaie de reporter la question jusqu’à ce que j’aie eu le temps d’y réfléchir.","I try to postpone the issue until I have had some time to think it over."],
+ s13:["Je cède sur certains points en échange d’autres.","I give up some points in exchange for others."],
+ s14:["J’essaie de mettre immédiatement sur la table toutes les préoccupations et tous les problèmes.","I attempt to get all concerns and issues immediately out in the open."],
+ s15:["J’estime que les désaccords ne valent pas toujours la peine qu’on s’en inquiète.","I feel that differences are not always worth worrying about."],
+ s16:["Je fais des efforts pour obtenir gain de cause.","I make some efforts to get my way."],
+ s17:["Je suis ferme dans la poursuite de mes objectifs.","I am firm in pursuing my goals."],
+ s18:["J’évite parfois de prendre des positions qui pourraient créer une controverse.","I sometimes avoid taking positions that would create controversy."],
+ s19:["Je laisse l’autre conserver certaines de ses positions s’il me laisse conserver certaines des miennes.","I will let the other person have some of his/her positions if he/she lets me have some of mine."],
+ s20:["Je propose un juste milieu.","I propose a middle ground."],
+ s21:["J’insiste pour faire valoir mes arguments.","I press to get my points made."],
+ s22:["Je fais part de mes idées à l’autre et je lui demande les siennes.","I tell the other person my ideas and ask for his/hers."],
+ s23:["J’essaie de montrer à l’autre la logique et les avantages de ma position.","I try to show the other person the logic and benefits of my position."],
+ s24:["Je fais le nécessaire pour éviter les tensions.","I try to do what is necessary to avoid tensions."],
+ s25:["J’essaie de ne pas blesser l’autre.","I try not to hurt the other’s feelings."],
+ s26:["J’essaie de convaincre l’autre du bien-fondé de ma position.","I try to convince the other person of the merits of my position."],
+ s27:["Si cela fait plaisir aux autres, je peux les laisser garder leur point de vue.","If it makes other people happy, I might let them maintain their views."],
+ s28:["Je laisse les autres conserver certaines de leurs positions s’ils me laissent conserver certaines des miennes.","I will let other people have some of their positions if they let me have some of mine."],
+ s29:["J’essaie de traiter immédiatement nos divergences.","I attempt to immediately work through our differences."],
+ s30:["J’essaie de trouver une répartition équitable des gains et des pertes pour chacun de nous.","I try to find a fair combination of gains and losses for both of us."],
+ s31:["En abordant une négociation, j’essaie de tenir compte des souhaits de l’autre.","In approaching negotiations, I try to be considerate of the other person’s wishes."],
+ s32:["Je privilégie toujours une discussion directe du problème.","I always lean toward a direct discussion of the problem."],
+ s33:["J’essaie de trouver une position intermédiaire entre la sienne et la mienne.","I try to find a position that is intermediate between his/hers and mine."],
+ s34:["J’affirme mes souhaits.","I assert my wishes."],
+ s35:["Je me soucie très souvent de satisfaire tous nos souhaits.","I am very often concerned with satisfying all our wishes."],
+ s36:["Si sa position semble très importante pour l’autre, j’essaie de répondre à ses souhaits.","If the other’s position seems very important to him/her, I would try to meet his/her wishes."],
+ s37:["J’essaie d’amener l’autre à accepter un compromis.","I try to get the other person to settle for a compromise."],
+ s38:["Je me soucie presque toujours de satisfaire tous nos souhaits.","I am nearly always concerned with satisfying all our wishes."],
+ s39:["Je sollicite généralement l’aide de l’autre pour élaborer une solution.","I usually seek the other’s help in working out a solution."],
+ s40:["Je partage toujours le problème avec l’autre afin que nous puissions le résoudre ensemble.","I always share the problem with the other person so that we can work it out."]
+};
+const C="competing",L="collaborating",P="compromising",V="avoiding",A="accommodating";
+/* [statementA, modeA, statementB, modeB] — scoring key of the TKI */
+const Q = [
+ ["s1",V,"s2",A],["s3",P,"s4",L],["s5",C,"s6",A],["s3",P,"s7",A],["s8",L,"s9",V],
+ ["s10",V,"s11",C],["s12",V,"s13",P],["s5",C,"s14",L],["s15",V,"s16",C],["s17",C,"s3",P],
+ ["s14",L,"s6",A],["s18",V,"s19",P],["s20",P,"s21",C],["s22",L,"s23",C],["s6",A,"s24",V],
+ ["s25",A,"s26",C],["s5",C,"s9",V],["s27",A,"s28",P],["s14",L,"s12",V],["s29",L,"s30",P],
+ ["s31",A,"s32",L],["s33",P,"s34",C],["s35",L,"s1",V],["s36",A,"s37",P],["s23",C,"s31",A],
+ ["s20",P,"s38",L],["s18",V,"s27",A],["s5",C,"s39",L],["s20",P,"s15",V],["s25",A,"s40",L]
+];
+
+const T = {
+ fr:{eyebrow:"Profil de gestion des conflits · Thomas-Kilmann",
+  h1:"Deux enfants, une seule pomme. Que font-ils ?",
+  lead:"Face à un désaccord, chacun a ses réflexes. Ce questionnaire de 30 paires d’affirmations révèle les modes que vous privilégiez quand vos attentes s’opposent à celles d’un autre.",
+  start:"Commencer le test",
+  appleQ:"« Il n’y a qu’une pomme pour le goûter… »",
+  axesEyebrow:"Le modèle",
+  axesTitle:"Deux dimensions, cinq façons de gérer un conflit",
+  assert:"Assertivité",assertDef:"La tendance à chercher à satisfaire ses propres aspirations.",
+  coop:"Coopération",coopDef:"La tendance à chercher à satisfaire les aspirations de l’autre.",
+  howTitle:"Comment répondre",
+  howText:"Pensez aux situations où vos souhaits diffèrent de ceux d’une autre personne. Pour chaque paire, choisissez l’affirmation qui décrit le mieux votre comportement habituel. Souvent, aucune des deux ne vous ressemblera parfaitement : choisissez celle que vous auriez le plus tendance à adopter.",
+  meta1:"30 paires",meta2:"≈ 7 minutes",meta3:"Pas de bonne réponse",
+  prompt:"Dans une situation de désaccord, je me reconnais plutôt dans :",
+  back:"← Question précédente",hint:"Raccourcis clavier : A / B",
+  q:"Question",
+  resEyebrow:"Votre profil",
+  resLead1:"Votre mode privilégié est",resLead2:"Celui que vous utilisez le moins :",
+  scoresTitle:"Vos scores par mode",
+  scale0:"Score sur 12 (le trait central marque la moyenne, 6).",scaleH:" : de 8 à 12",scaleM:" : de 5 à 7",scaleL:" : de 0 à 4",lowL:"Faible",highL:"Forte",defsTitle:"Les cinq modes",ctaText:"Approfondissons vos résultats lors d’un échange gratuit de 30 min et construisons votre feuille de route IA & négociation.",ctaContact:"Contactez-nous à",pdf:"Télécharger le PDF",pdfBusy:"Préparation du PDF…",pdfDone:"PDF téléchargé.",pdfFail:"Le PDF n’a pas pu être généré.",formEyebrow:"Dernière étape",formTitle:"Votre profil est prêt",formLead:"Indiquez vos coordonnées pour afficher vos résultats et recevoir votre rapport PDF par e-mail.",fFirst:"Prénom",fLast:"Nom",fEmail:"E-mail professionnel",fCompany:"Entreprise",fSubmit:"Voir mes résultats →",formNote:"Vos réponses sont enregistrées par WeNego uniquement pour vous envoyer votre rapport et vous recontacter si vous le souhaitez.",errRequired:"Merci de remplir tous les champs.",errEmail:"Cette adresse e-mail ne semble pas valide.",sending:"Envoi de votre rapport…",sent:"Votre rapport a été envoyé à ",
+  high:"Élevé",mid:"Modéré",low:"Faible",
+  dominant:"Mode dominant",least:"Mode le moins utilisé",
+  usefulWhen:"Utile quand…",askHigh:"Questions à vous poser (score élevé)",askLow:"Questions à vous poser (score faible)",
+  allTitle:"Les cinq modes en détail",
+  descT:"Description",
+  noRight:"Il n’y a pas de bonne réponse",
+  noRightText:"Selon la situation, les cinq modes sont utiles. Leur efficacité dépend du contexte et de votre aisance dans chacun d’eux. Ce profil montre vos réflexes, pas une limite : l’enjeu est de choisir consciemment le mode adapté à chaque négociation.",
+  copy:"Copier mes résultats",copied:"Résultats copiés.",copyFail:"Copie impossible ici : sélectionnez le texte manuellement.",
+  restart:"Refaire le test",and:"et",fAbout:"WeNego conçoit et anime des ateliers de négociation avancés, du coaching et du conseil pour les équipes achats et commerciales — pour faire de la négociation une compétence reproductible et mesurable, avec un ROI immédiat.",s1n:"15 ans",s1:"d’existence",s2:"Négociateurs formés",s3:"Ateliers animés",fVisit:"Visiter wenego.fr →",barTitle:"Profil de gestion des conflits"},
+ en:{eyebrow:"Conflict-handling profile · Thomas-Kilmann",
+  h1:"Two children, one apple. What do they do?",
+  lead:"Everyone has reflexes when facing disagreement. This 30-pair questionnaire reveals the modes you rely on when your wishes differ from someone else’s.",
+  start:"Start the test",
+  appleQ:"“There’s only one apple for snack time…”",
+  axesEyebrow:"The model",
+  axesTitle:"Two dimensions, five ways to handle conflict",
+  assert:"Assertiveness",assertDef:"The extent to which you try to satisfy your own concerns.",
+  coop:"Cooperativeness",coopDef:"The extent to which you try to satisfy the other person’s concerns.",
+  howTitle:"How to answer",
+  howText:"Think of situations in which your wishes differ from those of another person. For each pair, choose the statement that best describes how you usually behave. Often neither will feel exactly right: pick the one you would be more likely to use.",
+  meta1:"30 pairs",meta2:"≈ 7 minutes",meta3:"No right answers",
+  prompt:"When we disagree, I am more likely to say:",
+  back:"← Previous question",hint:"Keyboard shortcuts: A / B",
+  q:"Question",
+  resEyebrow:"Your profile",
+  resLead1:"Your preferred mode is",resLead2:"The one you use least:",
+  scoresTitle:"Your scores by mode",
+  scale0:"Score out of 12 (the centre line marks the average, 6).",scaleH:": 8 to 12",scaleM:": 5 to 7",scaleL:": 0 to 4",lowL:"Low",highL:"High",defsTitle:"The five modes",ctaText:"Let’s go deeper into your results in a free 30 min conversation and build your AI & negotiation roadmap.",ctaContact:"Contact us at",pdf:"Download PDF",pdfBusy:"Preparing the PDF…",pdfDone:"PDF downloaded.",pdfFail:"The PDF could not be generated.",formEyebrow:"Last step",formTitle:"Your profile is ready",formLead:"Enter your details to see your results and receive your PDF report by email.",fFirst:"First name",fLast:"Last name",fEmail:"Work email",fCompany:"Company",fSubmit:"See my results →",formNote:"WeNego keeps your answers only to send you your report and to follow up if you wish.",errRequired:"Please fill in every field.",errEmail:"This email address doesn’t look valid.",sending:"Sending your report…",sent:"Your report has been sent to ",
+  high:"High",mid:"Moderate",low:"Low",
+  dominant:"Dominant mode",least:"Least-used mode",
+  usefulWhen:"Useful when…",askHigh:"Questions to ask yourself (high score)",askLow:"Questions to ask yourself (low score)",
+  allTitle:"The five modes in detail",
+  descT:"Description",
+  noRight:"There are no right answers",
+  noRightText:"Depending on the situation, all five modes are useful. How effective each one is depends on the context and on your skill with it. This profile shows your reflexes, not your limits: the goal is to consciously choose the right mode for each negotiation.",
+  copy:"Copy my results",copied:"Results copied.",copyFail:"Copy isn’t available here: select the text manually.",
+  restart:"Retake the test",and:"and",fAbout:"WeNego designs and delivers advanced negotiation workshops, coaching and consultancy for procurement, sales and commercial teams, turning negotiation into a repeatable, measurable skill with immediate ROI.",s1n:"15 yrs",s1:"In negotiation",s2:"Negotiators trained",s3:"Workshops delivered",fVisit:"Visit wenego.fr →",barTitle:"Conflict management profiling"}
+};
+
+/* ---------- state ---------- */
+let lang="fr", idx=0, answers=new Array(30).fill(null), screen="intro", contact=null;
+/* Paste the Web App URL of the Google Apps Script here (Deploy → New deployment → Web app → URL ending in /exec). */
+const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbwMA1iKH9zhXFRucQhyykmpuIdBKjfLumBxhyk2ScSP8m4JdOqYrLRZjCuXQ5UDU4_YWA/exec";
+const $=id=>document.getElementById(id);
+const store={get(){try{return JSON.parse(localStorage.getItem("conflictprofile")||"null")}catch(e){return null}},
+             set(v){try{localStorage.setItem("conflictprofile",JSON.stringify(v))}catch(e){}}};
+function save(){store.set({lang,idx,answers})}
+
+function nb(s){return String(s).replace(/ ([:;?!»%])/g,"\u00a0$1").replace(/« /g,"«\u00a0")}
+function t(k){return nb(T[lang][k])}
+function band(s){return s>=8?"high":s>=5?"mid":"low"}
+
+function scores(){
+  const sc={};MODES.forEach(m=>sc[m]=0);
+  answers.forEach((a,i)=>{if(a){const q=Q[i];sc[a==="A"?q[1]:q[3]]++}});
+  return sc;
+}
+
+/* ---------- render ---------- */
+function renderStatic(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});
+  $("lang-fr").setAttribute("aria-pressed",lang==="fr");
+  $("lang-en").setAttribute("aria-pressed",lang==="en");
+  const order=["competing","collaborating","compromising","avoiding","accommodating"];
+  $("apple").innerHTML=`<div class="apple-q">${t("appleQ")}</div>`+order.map(m=>{
+    const d=M[m][lang];
+    return `<div class="reply" style="--c:var(--m-${m})"><span class="ani" aria-hidden="true">${ANI[m]}</span><div><q>${d.say}</q><small>${d.animal} · ${d.name}</small></div></div>`}).join("");
+  $("mode-cards").innerHTML=order.map(m=>{
+    const d=M[m][lang];
+    return `<article class="mode-card" style="--c:var(--m-${m})"><span class="ani" aria-hidden="true">${ANI[m]}</span><span class="tag">${d.tag}</span><h3 class="t-text">${d.name}</h3><p>${d.short}</p></article>`}).join("");
+}
+
+function show(s){
+  $("about-footer").hidden=s==="quiz"||s==="form";
+  $("screen-form").hidden=s!=="form";
+  screen=s;
+  $("screen-intro").hidden=s!=="intro";
+  $("screen-quiz").hidden=s!=="quiz";
+  $("screen-result").hidden=s!=="result";
+  if(s==="quiz")renderQ();
+  if(s==="result")renderResult();
+  save();
+}
+
+function renderQ(){
+  const q=Q[idx];
+  $("txt-a").textContent=S[q[0]][lang==="fr"?0:1];
+  $("txt-b").textContent=S[q[2]][lang==="fr"?0:1];
+  $("choice-a").setAttribute("aria-pressed",answers[idx]==="A");
+  $("choice-b").setAttribute("aria-pressed",answers[idx]==="B");
+  const done=answers.filter(Boolean).length;
+  $("q-count").textContent=`${t("q")} ${idx+1} / 30`;
+  $("q-pct").textContent=Math.round(done/30*100)+" %";
+  $("q-bar").style.width=(done/30*100)+"%";
+  $("back").disabled=idx===0;
+}
+
+function pick(opt){
+  answers[idx]=opt;
+  renderQ();
+  setTimeout(()=>{
+    const next=answers.findIndex((a,i)=>i>idx&&!a);
+    const anyEmpty=answers.findIndex(a=>!a);
+    if(idx<29 && (next!==-1||anyEmpty===-1)) {idx=next!==-1?next:idx+1;renderQ();save();}
+    else if(anyEmpty!==-1){idx=anyEmpty;renderQ();save();}
+    else show("form");
+  },220);
+  save();
+}
+
+function sizeYLabel(){const m=$("matrix"),y=$("yl");if(m&&y&&m.offsetHeight)y.style.width=m.offsetHeight+"px"}
+window.addEventListener("resize",sizeYLabel);
+function list(arr){return `<ul class="clean">${arr.map(x=>`<li>${x}</li>`).join("")}</ul>`}
+
+function renderResult(){
+  const sc=scores();
+  const max=Math.max(...MODES.map(m=>sc[m])), min=Math.min(...MODES.map(m=>sc[m]));
+  const top=MODES.filter(m=>sc[m]===max), bottom=MODES.filter(m=>sc[m]===min);
+  const names=arr=>arr.map(m=>M[m][lang].name).join(` ${t("and")} `);
+  $("res-title").textContent=top.map(m=>`${M[m][lang].animal}`).join(" & ")+" "+top.map(m=>ANI[m]).join("");
+  $("res-lead").textContent=nb(`${t("resLead1")} ${names(top).toLowerCase()} (${max}/12). ${t("resLead2")} ${names(bottom).toLowerCase()} (${min}/12).`);
+
+  // matrix
+  const mx=$("matrix");
+  mx.innerHTML=
+   MODES.map(m=>{const [x,y]=POS[m];const s=sc[m];const sz=34+s*3.4;const pct=Math.round(s/30*100);
+     return `<div class="node" style="left:${x}%;top:${y}%"><span class="dot" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.46)}px" aria-hidden="true">${ANI[m]}</span><b>${M[m][lang].name}</b><span class="pct">${pct} %</span></div>`}).join("");
+
+  sizeYLabel();
+  // definitions next to the matrix
+  $("defs").innerHTML=["competing","collaborating","compromising","avoiding","accommodating"].map(m=>{const d=M[m][lang];
+    return `<div class="def"><span class="ico" aria-hidden="true">${ANI[m]}</span><div><b>${d.name} · <span style="font-weight:400;color:var(--muted)">${d.tag}</span></b><p>${d.short}</p></div></div>`}).join("");
+
+  // bars
+  const sorted=[...MODES].sort((a,b)=>sc[b]-sc[a]);
+  $("bars").innerHTML=sorted.map(m=>{const s=sc[m],b=band(s);
+    return `<div class="barrow"><span class="ani" aria-hidden="true">${ANI[m]}</span><div><div class="name"><span>${M[m][lang].name}</span><span class="band ${b}">${t(b)}</span></div><div class="btrack"><i style="width:${s/12*100}%;background:var(--ink)"></i></div></div><span class="score">${s}/12</span></div>`}).join("");
+
+  // focus
+  const tm=top[0], bm=bottom[0];
+  const card=(m,kick,qs,qk)=>{const d=M[m][lang];
+    return `<div class="panel" style="--c:var(--m-${m})"><span class="kicker">${kick} · ${sc[m]}/12</span><h3><span aria-hidden="true">${ANI[m]}</span>${d.name}</h3><p>${d.desc}</p><h4 class="t-text">${t(qk)}</h4>${list(qs)}</div>`};
+  $("focus").innerHTML=card(tm,t("dominant"),M[tm][lang].high,"askHigh")+(bm!==tm?card(bm,t("least"),M[bm][lang].low,"askLow"):"");
+
+  // all modes
+  $("all-modes").innerHTML=sorted.map(m=>{const d=M[m][lang];
+    return `<details><summary><span class="ani" aria-hidden="true">${ANI[m]}</span>${d.name} <span style="color:var(--muted);font-weight:400">· ${d.animal}</span><span class="sc">${sc[m]}/12 · ${t(band(sc[m]))}</span></summary>
+     <div class="det"><div class="full"><h4 class="t-text">${t("descT")}</h4><p>${d.desc}</p></div>
+     <div><h4 class="t-text">${t("usefulWhen")}</h4>${list(d.useful)}</div>
+     <div><h4 class="t-text">${t("askHigh")}</h4>${list(d.high)}<h4 class="t-text" style="margin-top:10px">${t("askLow")}</h4>${list(d.low)}</div></div></details>`}).join("");
+}
+
+async function deliverFile(blob,filename){
+  if(window.claude&&typeof window.claude.use==="function"){
+    const dl=await window.claude.use("downloads");
+    if(dl){try{await dl.save({filename,data:blob});return true}catch(e){if(e&&e.code==="declined")return false}}
+  }
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);return true;
+}
+async function buildPdf(scale){
+  const el=document.querySelector(".wrap");
+  const canvas=await html2canvas(el,{scale:scale||2,backgroundColor:"#F5F4F0",useCORS:true,windowWidth:1240,
+    onclone:doc=>{doc.documentElement.setAttribute("data-theme","light");doc.body.classList.add("pdf-mode");
+      doc.querySelectorAll("#all-modes details").forEach(d=>d.open=true);
+      const r=doc.getElementById("screen-result");if(r)r.hidden=false;}});
+  const {jsPDF}=window.jspdf;const pdf=new jsPDF({unit:"mm",format:"a4"});
+  const mg=10,W=210-2*mg,H=297-2*mg,pagePx=Math.floor(canvas.width*H/W);
+  for(let y=0,i=0;y<canvas.height;y+=pagePx,i++){
+    const hh=Math.min(pagePx,canvas.height-y),c=document.createElement("canvas");c.width=canvas.width;c.height=hh;
+    const g=c.getContext("2d");g.fillStyle="#F5F4F0";g.fillRect(0,0,c.width,hh);g.drawImage(canvas,0,y,canvas.width,hh,0,0,canvas.width,hh);
+    if(i)pdf.addPage();pdf.addImage(c.toDataURL("image/jpeg",0.88),"JPEG",mg,mg,W,hh*W/canvas.width);
+  }
+  return pdf;
+}
+function pdfName(){return lang==="fr"?"WeNego-Profil-Conflits.pdf":"WeNego-Conflict-Profile.pdf"}
+async function downloadPdf(){
+  const btn=$("pdf");btn.disabled=true;$("toast").textContent=t("pdfBusy");
+  try{const pdf=await buildPdf(2);const ok=await deliverFile(pdf.output("blob"),pdfName());$("toast").textContent=ok?t("pdfDone"):"";}
+  catch(e){console.error(e);$("toast").textContent=t("pdfFail")}
+  finally{btn.disabled=false}
+}
+async function sendSubmission(){
+  if(!contact||!/^https:\/\/script\.google\.com\//.test(SHEET_ENDPOINT))return;
+  $("toast").textContent=t("sending");
+  const sc=scores();
+  const max=Math.max(...MODES.map(m=>sc[m])),min=Math.min(...MODES.map(m=>sc[m]));
+  let pdfBase64="";
+  try{const pdf=await buildPdf(1.5);pdfBase64=pdf.output("datauristring").split(",")[1]}catch(e){console.error(e)}
+  const payload={tool:"conflict-profile",lang,...contact,
+    scores:Object.fromEntries(MODES.map(m=>[m,sc[m]])),
+    labels:Object.fromEntries(MODES.map(m=>[m,M[m][lang].name])),
+    dominant:MODES.filter(m=>sc[m]===max).map(m=>M[m][lang].name).join(" / "),
+    least:MODES.filter(m=>sc[m]===min).map(m=>M[m][lang].name).join(" / "),
+    answers:answers.join(""),pdfBase64,pdfName:pdfName(),pageUrl:location.href};
+  try{
+    await fetch(SHEET_ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    $("toast").textContent=t("sent")+contact.email+".";
+  }catch(e){console.error(e);$("toast").textContent="";}
+}
+function resultText(){
+  const sc=scores();
+  return [lang==="fr"?"Mon profil Thomas-Kilmann":"My Thomas-Kilmann profile",
+    ...[...MODES].sort((a,b)=>sc[b]-sc[a]).map(m=>`${M[m][lang].name} (${M[m][lang].animal}) : ${sc[m]}/12 · ${Math.round(sc[m]/30*100)} %`)].join("\n");
+}
+
+/* ---------- events ---------- */
+$("f-back").addEventListener("click",()=>{idx=29;show("quiz")});
+$("lead-form").addEventListener("submit",e=>{
+  e.preventDefault();
+  const ids=["f-first","f-last","f-email","f-company"],vals=ids.map(i=>$(i).value.trim());
+  ids.forEach((i,k)=>$(i).setAttribute("aria-invalid",vals[k]?"false":"true"));
+  if(vals.some(v=>!v)){$("form-err").textContent=t("errRequired");return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(vals[2])){$("f-email").setAttribute("aria-invalid","true");$("form-err").textContent=t("errEmail");return}
+  $("form-err").textContent="";
+  contact={firstName:vals[0],lastName:vals[1],email:vals[2],company:vals[3]};
+  show("result");window.scrollTo(0,0);
+  setTimeout(sendSubmission,400);
+});
+document.querySelectorAll(".lang button").forEach(b=>b.addEventListener("click",()=>{lang=b.dataset.lang;renderStatic();if(screen==="quiz")renderQ();if(screen==="result")renderResult();save()}));
+["start-top","start-bottom"].forEach(id=>$(id).addEventListener("click",()=>{let e=answers.findIndex(a=>!a);if(e===-1){answers=new Array(30).fill(null);e=0}idx=e;show("quiz");window.scrollTo(0,0)}));
+$("choice-a").addEventListener("click",()=>pick("A"));
+$("choice-b").addEventListener("click",()=>pick("B"));
+$("back").addEventListener("click",()=>{if(idx>0){idx--;renderQ();save()}});
+$("restart").addEventListener("click",()=>{answers=new Array(30).fill(null);idx=0;show("intro");window.scrollTo(0,0)});
+$("pdf").addEventListener("click",downloadPdf);
+document.addEventListener("keydown",e=>{
+  if(screen!=="quiz"||e.metaKey||e.ctrlKey||e.altKey)return;
+  const k=e.key.toLowerCase();
+  if(k==="a")pick("A"); else if(k==="b")pick("B");
+  else if(k==="arrowleft"&&idx>0){idx--;renderQ();save()}
+});
+
+/* ---------- boot ---------- */
+const saved=store.get();
+if(saved&&Array.isArray(saved.answers)&&saved.answers.length===30){lang=saved.lang||"fr";idx=saved.idx||0;answers=saved.answers;if(answers.every(Boolean)){answers=new Array(30).fill(null);idx=0}}
+renderStatic();show("intro");
+</script>
