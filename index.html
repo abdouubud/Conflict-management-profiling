@@ -14,7 +14,7 @@
   --m-competing:#13213C; --m-collaborating:#C9A227; --m-compromising:#5E6A86; --m-avoiding:#AEB4C2; --m-accommodating:#E6D08A;
   --display:"Fraunces", Georgia, "Times New Roman", serif;
   --body:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --fs-title:clamp(1.4rem, 2.4vw, 1.85rem);
+  --fs-title:clamp(1.3rem, 2.1vw, 1.6rem);
   --dot-bg:#ECEDF1;
   --z1:#EEF0F4; --z2:#E0E4EC; --z3:#F1E6C2;
   --fs-text:1rem;
@@ -36,7 +36,8 @@
 
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--fs-text);line-height:1.6;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1200px;margin:0 auto;padding-inline:20px;padding-block:16px 48px}
+.wrap{max-width:1200px;margin:0 auto;padding-inline:20px;padding-block:16px 16px}
+#screen-intro{padding-bottom:12px}
 h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.15;text-wrap:balance;margin:0;letter-spacing:-.01em;font-size:var(--fs-title)}
 /* everything that isn't a title uses the text size */
 p,li,button,small,b,span,summary,q,.eyebrow,.lead{font-size:var(--fs-text)}
@@ -219,7 +220,9 @@ details[open] summary::after{content:"–"}
 .rp-sum-ani{font-size:40px;line-height:1;flex:none}
 .rp-sum-t{font-family:var(--display);font-size:21px;font-weight:600;line-height:1.2;margin-bottom:4px}
 .rp-summary p{margin:0}
-.rp-zh,.rp-row{display:grid;grid-template-columns:24px 250px minmax(0,1fr) 42px 72px;gap:10px;align-items:center}
+.rp-zh,.rp-row{display:grid;grid-template-columns:24px 170px minmax(0,1fr) 42px 72px;column-gap:10px;row-gap:1px;align-items:center}
+.rp-row .a{grid-row:1/3}
+.rp-row .df{grid-column:2/-1;grid-row:2;color:#4D5872;font-size:10.5px;line-height:1.35;white-space:nowrap}
 .rp-row .n .tg{font-weight:400;color:#4D5872}
 .rp-row .n small{display:block;font-weight:400;color:#4D5872;font-size:10.5px;line-height:1.4}
 .rp-zh{margin-top:6px}
@@ -295,13 +298,19 @@ details[open] summary::after{content:"–"}
 .rsec > .lead{max-width:none}
 .rsec .tki-intro{display:flex;flex-direction:column;gap:14px}
 .rsec .tki-intro p{color:var(--muted);max-width:none}
-.zone-head,.barrow{display:grid;grid-template-columns:24px minmax(0,1.45fr) minmax(0,1fr) 40px;gap:12px;align-items:center}
-.barrow .nm{min-width:0}
-.barrow .name{display:block!important;margin:0 0 2px!important;line-height:1.35}
-.barrow .name .tag{font-weight:400;color:var(--muted)}
+.zone-head,.barrow{display:grid;grid-template-columns:24px minmax(0,1fr) minmax(0,1.25fr) 44px;column-gap:12px;align-items:center}
+.barrow{row-gap:2px}
+.barrow .ani{grid-row:1/3;align-self:center;width:24px;font-size:18px;line-height:1;text-align:center}
+.barrow .name{display:block!important;margin:0!important;font-size:15px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.barrow .ani{grid-column:1}
+.barrow .name{grid-column:2;grid-row:1}
+.barrow .ztrack{grid-column:3;grid-row:1}
+.barrow .score{grid-column:4;grid-row:1}
+.barrow .score{font-size:15px}
 #screen-result .rsec:nth-of-type(2) .res-grid{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}
 @media (max-width:760px){#screen-result .rsec:nth-of-type(2) .res-grid{grid-template-columns:1fr}}
-.barrow .short{color:var(--muted);font-size:.86rem;line-height:1.45}
+.barrow .short{grid-column:2/-1;grid-row:2;margin:0;color:var(--muted);font-size:13px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .res-grid > .panel:has(.matrix){justify-content:center}
 .zone-head .zh{grid-column:3;display:grid;grid-template-columns:1fr 1fr 1fr;color:var(--muted);font-weight:600;text-align:center;line-height:1.3}
 .zone-head .zh small{font-weight:400}
@@ -373,7 +382,11 @@ body.pdf-mode .pdf-about .about .btn{display:none}
   .hero,.res-grid,.focus,.howto,.det,.axes,.why{grid-template-columns:1fr}
   .zone-head,.barrow{grid-template-columns:26px minmax(0,1fr) 44px}
   .zone-head > span{display:none}
+  .barrow .ani{grid-row:1}
   .barrow .ztrack{grid-column:1/-1;grid-row:2}
+  .barrow .score{grid-column:3}
+  .barrow .name{grid-column:2}
+  .barrow .short{grid-column:1/-1;grid-row:3;white-space:normal}
   .barrow .band{display:none}
   .zone-head .zh{grid-column:1/-1}
   .howto .cta{justify-content:flex-start}
@@ -530,7 +543,7 @@ body.pdf-mode .pdf-about .about .btn{display:none}
     </section>
 
     <!-- 4 · CTA -->
-    <div class="cta-box" style="margin-bottom:28px">
+    <div class="cta-box">
       <span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg></span>
       <p><span data-i18n="ctaText"></span> <span data-i18n="ctaContact"></span> <a href="mailto:contact@wenego.fr">contact@wenego.fr</a></p>
     </div>
@@ -886,7 +899,7 @@ Object.assign(T.en,{
 /* ---------- state ---------- */
 let lang="fr", idx=0, answers=new Array(30).fill(null), screen="intro", contact=null;
 /* Paste the Web App URL of the Google Apps Script here (Deploy → New deployment → Web app → URL ending in /exec). */
-const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbxrY2AgBUulzeCIpwOcO6y7POEQlQdMUVrZE8IPBpFDx4UTAH5lxOpJP-YvRD3VUJh7fg/exec";
+const SHEET_ENDPOINT="https://script.google.com/macros/s/AKfycbwMA1iKH9zhXFRucQhyykmpuIdBKjfLumBxhyk2ScSP8m4JdOqYrLRZjCuXQ5UDU4_YWA/exec";
 const $=id=>document.getElementById(id);
 const store={get(){try{return JSON.parse(localStorage.getItem("conflictprofile")||"null")}catch(e){return null}},
              set(v){try{localStorage.setItem("conflictprofile",JSON.stringify(v))}catch(e){}}};
@@ -1003,7 +1016,7 @@ function renderResult(){
   sizeYLabel();
   const sorted=[...MODES].sort((a,b)=>sc[b]-sc[a]);
   $("bars").innerHTML=sorted.map(m=>{const s=sc[m],b=band(s);
-    return `<div class="barrow"><span class="ani" aria-hidden="true">${ANI[m]}</span><div class="nm"><p class="name">${M[m][lang].name} <span class="tag">· ${M[m][lang].tag}</span></p><p class="short">${M[m][lang].short}</p></div><div class="ztrack" title="${s}/12 · ${t(b)}"><i style="width:${s/12*100}%"></i></div><span class="score">${s}/12</span></div>`}).join("");
+    return `<div class="barrow"><span class="ani" aria-hidden="true">${ANI[m]}</span><p class="name">${M[m][lang].name}</p><div class="ztrack" title="${s}/12 · ${t(b)}"><i style="width:${s/12*100}%"></i></div><span class="score">${s}/12</span><p class="short">${M[m][lang].short}</p></div>`}).join("");
   $("all-modes").innerHTML=sorted.map(m=>{const d=M[m][lang],isDom=sc[m]>=HIGH;
     return `<details class="${isDom?"dom":""}"${isDom?" open":""}><summary><span class="ani" aria-hidden="true">${ANI[m]}</span>${d.name} <span style="color:var(--muted);font-weight:400">· ${d.animal}</span>${isDom?`<span class="det-badge">${t("domBadge")}</span>`:""}<span class="sc">${sc[m]}/12 · ${t(band(sc[m]))}</span></summary>
      <div class="det"><div class="full"><h4 class="t-text">${t("descT")}</h4><p>${d.desc}</p></div>
@@ -1066,7 +1079,7 @@ function reportBlocks(R){
   B.push(h2(2,R.s2));
   B.push({html:`<div class="rp-zh"><div><span>${n(t("low"))}<br>0–4</span><span>${n(t("mid"))}<br>4–8</span><span>${n(t("high"))}<br>8–12</span></div></div>`,keep:true});
   B.push(...
-sorted.map(m=>{const v=sc[m],b=band(v);return `<div class="rp-row"><span class="a">${ANI[m]}</span><span class="n">${n(M[m][L].name)} <span class="tg">· ${n(M[m][L].tag)}</span><small>${n(M[m][L].short)}</small></span><div class="rp-track"><i style="width:${v/12*100}%"></i></div><span class="rp-sc">${v}/12</span><span class="rp-band ${b}">${n(t(b))}</span></div>`}).map(h=>({html:h})));
+sorted.map(m=>{const v=sc[m],b=band(v);return `<div class="rp-row"><span class="a">${ANI[m]}</span><span class="n">${n(M[m][L].name)}</span><div class="rp-track"><i style="width:${v/12*100}%"></i></div><span class="rp-sc">${v}/12</span><span class="rp-band ${b}">${n(t(b))}</span><small class="df">${n(M[m][L].short)}</small></div>`}).map(h=>({html:h})));
   B.push(h2(3,R.s3));
   B.push({html:`<div class="rp-mapbox"><div class="rp-axis"><b>↑ ${n(t("assert"))}</b></div><div class="rp-map">${
     MODES.map(m=>{const [x,y]=POS[m],v=sc[m];return `<div class="rp-node" style="left:${x}%;top:${y}%"><span style="font-size:${Math.round(22+v*2.6)}px;line-height:1">${ANI[m]}</span><b>${n(M[m][L].name)}</b><i>${Math.round(v/30*100)} %</i></div>`}).join("")
